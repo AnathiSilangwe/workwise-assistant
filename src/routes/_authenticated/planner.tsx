@@ -1,14 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { useMutation } from "@tanstack/react-query";
-import { CalendarClock, Loader2, Lightbulb } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { CalendarClock, Lightbulb } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { planTasks } from "@/lib/features.functions";
+import { toggleFavorite } from "@/lib/history.functions";
+import { OutputActions } from "@/components/output-actions";
+import { TypingIndicator } from "@/components/typing-indicator";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/planner")({
@@ -19,6 +22,7 @@ export const Route = createFileRoute("/_authenticated/planner")({
 type PlanResult = {
   schedule?: { time: string; task: string; priority?: string }[];
   tips?: string[];
+  historyId?: string | null;
 };
 
 const priorityColor = (p?: string) => {
@@ -30,14 +34,40 @@ const priorityColor = (p?: string) => {
 };
 
 function PlannerPage() {
+  const qc = useQueryClient();
   const [tasks, setTasks] = useState("Finish report\nAttend team meeting\nStudy SQL\nExercise\nBuy groceries");
   const [hours, setHours] = useState("8 AM - 5 PM");
+  const [fav, setFav] = useState(false);
   const callFn = useServerFn(planTasks);
+  const favFn = useServerFn(toggleFavorite);
   const mutation = useMutation({
     mutationFn: () => callFn({ data: { tasks, workingHours: hours } }),
+    onSuccess: () => { setFav(false); qc.invalidateQueries({ queryKey: ["history"] }); qc.invalidateQueries({ queryKey: ["stats"] }); },
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
   const result = mutation.data as PlanResult | undefined;
+  const historyId = result?.historyId;
+
+  const exported = result
+    ? [
+        "DAILY SCHEDULE",
+        ...(result.schedule ?? []).map((s) => `${s.time}  ${s.task}  [${s.priority || "—"}]`),
+        "",
+        "TIPS",
+        ...(result.tips ?? []).map((t) => `• ${t}`),
+      ].join("\n")
+    : "";
+
+  const onToggleFav = async () => {
+    if (!historyId) return;
+    const next = !fav;
+    setFav(next);
+    try {
+      await favFn({ data: { id: historyId, favorite: next } });
+      qc.invalidateQueries({ queryKey: ["favorites"] });
+      toast.success(next ? "Saved" : "Removed");
+    } catch { setFav(!next); }
+  };
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
@@ -54,19 +84,28 @@ function PlannerPage() {
             <Textarea value={tasks} onChange={(e) => setTasks(e.target.value)} rows={12} />
           </div>
           <Button onClick={() => mutation.mutate()} disabled={mutation.isPending} className="w-full">
-            {mutation.isPending ? <><Loader2 className="mr-2 size-4 animate-spin" />Planning</> : "Build my day"}
+            {mutation.isPending ? "Planning…" : "Build my day"}
           </Button>
         </div>
 
         <div className="space-y-4 lg:col-span-3">
           {mutation.isPending ? (
-            <div className="space-y-2 rounded-2xl border border-border bg-surface/50 p-6">
-              {[100, 80, 90, 70, 85].map((w, i) => (
-                <div key={i} className="h-10 animate-pulse rounded bg-muted" style={{ width: `${w}%` }} />
-              ))}
+            <div className="rounded-2xl border border-border bg-surface/50 p-6">
+              <TypingIndicator label="Organising your day" />
             </div>
           ) : result ? (
             <>
+              <div className="flex justify-end">
+                <OutputActions
+                  text={exported}
+                  onRegenerate={() => mutation.mutate()}
+                  regenerating={mutation.isPending}
+                  filename="daily-plan.txt"
+                  favorite={fav}
+                  onToggleFavorite={onToggleFav}
+                  favoriteDisabled={!historyId}
+                />
+              </div>
               <div className="rounded-2xl border border-border bg-surface/50 p-2">
                 <ul className="divide-y divide-border">
                   {(result.schedule ?? []).map((s, i) => (
