@@ -134,8 +134,8 @@ function Dashboard() {
               <AreaChart data={stats?.timeseries ?? []}>
                 <defs>
                   <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.45} />
-                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                    <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.45} />
+                    <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <XAxis
@@ -144,12 +144,12 @@ function Dashboard() {
                   axisLine={false}
                   tickLine={false}
                   fontSize={11}
-                  stroke="hsl(var(--muted-foreground))"
+                  stroke="var(--muted-foreground)"
                 />
                 <Tooltip
                   contentStyle={{
-                    background: "hsl(var(--background))",
-                    border: "1px solid hsl(var(--border))",
+                    background: "var(--background)",
+                    border: "1px solid var(--border)",
                     borderRadius: 8,
                     fontSize: 12,
                   }}
@@ -158,7 +158,7 @@ function Dashboard() {
                 <Area
                   type="monotone"
                   dataKey="count"
-                  stroke="hsl(var(--primary))"
+                  stroke="var(--primary)"
                   strokeWidth={2}
                   fill="url(#g1)"
                 />
@@ -178,17 +178,17 @@ function Dashboard() {
                   axisLine={false}
                   tickLine={false}
                   fontSize={11}
-                  stroke="hsl(var(--muted-foreground))"
+                  stroke="var(--muted-foreground)"
                 />
                 <Tooltip
                   contentStyle={{
-                    background: "hsl(var(--background))",
-                    border: "1px solid hsl(var(--border))",
+                    background: "var(--background)",
+                    border: "1px solid var(--border)",
                     borderRadius: 8,
                     fontSize: 12,
                   }}
                 />
-                <Bar dataKey="value" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="value" fill="var(--primary)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -286,12 +286,12 @@ function ProductivityScore({ score }: { score: number }) {
   return (
     <div className="flex items-center gap-4 rounded-2xl border border-border bg-surface/50 p-5">
       <svg width="76" height="76" viewBox="0 0 76 76">
-        <circle cx="38" cy="38" r={radius} stroke="hsl(var(--muted))" strokeWidth="6" fill="none" />
+        <circle cx="38" cy="38" r={radius} stroke="var(--muted)" strokeWidth="6" fill="none" />
         <circle
           cx="38"
           cy="38"
           r={radius}
-          stroke="hsl(var(--primary))"
+          stroke="var(--primary)"
           strokeWidth="6"
           fill="none"
           strokeDasharray={c}
