@@ -1,13 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { useMutation } from "@tanstack/react-query";
-import { FileText, Loader2, CheckCircle2, ListChecks, CalendarClock } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { FileText, CheckCircle2, ListChecks, CalendarClock } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { summarizeMeeting } from "@/lib/features.functions";
+import { toggleFavorite } from "@/lib/history.functions";
+import { OutputActions } from "@/components/output-actions";
+import { TypingIndicator } from "@/components/typing-indicator";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/summarizer")({
@@ -20,17 +23,43 @@ type SummaryResult = {
   decisions?: string[];
   action_items?: { owner?: string; task?: string; due?: string }[];
   deadlines?: string[];
+  historyId?: string | null;
 };
 
 function SummarizerPage() {
+  const qc = useQueryClient();
   const [notes, setNotes] = useState("");
+  const [fav, setFav] = useState(false);
   const callFn = useServerFn(summarizeMeeting);
+  const favFn = useServerFn(toggleFavorite);
   const mutation = useMutation({
     mutationFn: (n: string) => callFn({ data: { notes: n } }),
+    onSuccess: () => { setFav(false); qc.invalidateQueries({ queryKey: ["history"] }); qc.invalidateQueries({ queryKey: ["stats"] }); },
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
 
   const result = mutation.data as SummaryResult | undefined;
+  const historyId = result?.historyId;
+
+  const exported = result
+    ? [
+        `SUMMARY\n${result.summary ?? ""}`,
+        `\nDECISIONS\n${(result.decisions ?? []).map((d) => `• ${d}`).join("\n")}`,
+        `\nACTION ITEMS\n${(result.action_items ?? []).map((a) => `• ${a.owner || "—"}: ${a.task}${a.due ? ` (due ${a.due})` : ""}`).join("\n")}`,
+        result.deadlines && result.deadlines.length ? `\nDEADLINES\n${result.deadlines.join(", ")}` : "",
+      ].join("\n")
+    : "";
+
+  const onToggleFav = async () => {
+    if (!historyId) return;
+    const next = !fav;
+    setFav(next);
+    try {
+      await favFn({ data: { id: historyId, favorite: next } });
+      qc.invalidateQueries({ queryKey: ["favorites"] });
+      toast.success(next ? "Saved" : "Removed");
+    } catch { setFav(!next); }
+  };
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
@@ -52,21 +81,28 @@ function SummarizerPage() {
             onClick={() => mutation.mutate(notes)}
             className="w-full"
           >
-            {mutation.isPending ? <><Loader2 className="mr-2 size-4 animate-spin" />Summarizing</> : "Summarize"}
+            {mutation.isPending ? "Summarizing…" : "Summarize"}
           </Button>
         </div>
 
         <div className="space-y-4 lg:col-span-3">
           {mutation.isPending ? (
             <div className="rounded-2xl border border-border bg-surface/50 p-6">
-              <div className="space-y-2">
-                {[90, 70, 95, 60, 80].map((w, i) => (
-                  <div key={i} className="h-3 animate-pulse rounded bg-muted" style={{ width: `${w}%` }} />
-                ))}
-              </div>
+              <TypingIndicator label="Reading notes and extracting actions" />
             </div>
           ) : result ? (
             <>
+              <div className="flex justify-end">
+                <OutputActions
+                  text={exported}
+                  onRegenerate={() => mutation.mutate(notes)}
+                  regenerating={mutation.isPending}
+                  filename="meeting-summary.txt"
+                  favorite={fav}
+                  onToggleFavorite={onToggleFav}
+                  favoriteDisabled={!historyId}
+                />
+              </div>
               <Section title="Summary" icon={FileText}>
                 <p className="text-sm leading-relaxed">{result.summary}</p>
               </Section>

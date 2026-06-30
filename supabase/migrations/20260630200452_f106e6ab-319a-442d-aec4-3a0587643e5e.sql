@@ -1,0 +1,2 @@
+ALTER TABLE public.history ADD COLUMN IF NOT EXISTS favorite boolean NOT NULL DEFAULT false;
+CREATE INDEX IF NOT EXISTS history_user_favorite_idx ON public.history(user_id, favorite) WHERE favorite = true;

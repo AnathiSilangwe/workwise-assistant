@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { useMutation } from "@tanstack/react-query";
-import { Mail, Loader2, Copy, Download, RefreshCw } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Mail } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { generateEmail } from "@/lib/features.functions";
+import { toggleFavorite } from "@/lib/history.functions";
+import { OutputActions } from "@/components/output-actions";
+import { TypingIndicator, TypewriterText } from "@/components/typing-indicator";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/email")({
@@ -20,15 +23,19 @@ export const Route = createFileRoute("/_authenticated/email")({
 const TONES = ["Professional", "Friendly", "Concise", "Formal", "Persuasive", "Apologetic"];
 
 function EmailPage() {
+  const qc = useQueryClient();
   const [audience, setAudience] = useState("Manager");
   const [tone, setTone] = useState("Professional");
   const [purpose, setPurpose] = useState("");
   const [notes, setNotes] = useState("");
+  const [fav, setFav] = useState(false);
 
   const callFn = useServerFn(generateEmail);
+  const favFn = useServerFn(toggleFavorite);
   const mutation = useMutation({
     mutationFn: (vars: { audience: string; tone: string; purpose: string; notes: string }) =>
       callFn({ data: vars }),
+    onSuccess: () => { setFav(false); qc.invalidateQueries({ queryKey: ["history"] }); qc.invalidateQueries({ queryKey: ["stats"] }); },
     onError: (e: any) => toast.error(e.message ?? "Generation failed"),
   });
 
@@ -38,19 +45,19 @@ function EmailPage() {
   };
 
   const output = mutation.data?.text ?? "";
+  const historyId = mutation.data?.historyId;
 
-  const copy = () => {
-    navigator.clipboard.writeText(output);
-    toast.success("Copied to clipboard");
-  };
-  const download = () => {
-    const blob = new Blob([output], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "email.txt";
-    a.click();
-    URL.revokeObjectURL(url);
+  const onToggleFav = async () => {
+    if (!historyId) return;
+    const next = !fav;
+    setFav(next);
+    try {
+      await favFn({ data: { id: historyId, favorite: next } });
+      qc.invalidateQueries({ queryKey: ["favorites"] });
+      toast.success(next ? "Saved to favorites" : "Removed from favorites");
+    } catch {
+      setFav(!next);
+    }
   };
 
   return (
@@ -82,49 +89,36 @@ function EmailPage() {
               placeholder="Vacation from 10 July to 18 July, hand-off to teammate, etc." />
           </div>
           <Button onClick={run} disabled={mutation.isPending} className="w-full">
-            {mutation.isPending ? <><Loader2 className="mr-2 size-4 animate-spin" />Generating</> : "Generate email"}
+            {mutation.isPending ? "Generating…" : "Generate email"}
           </Button>
         </div>
 
         <div className="rounded-2xl border border-border bg-surface/50 p-6">
           <div className="mb-3 flex items-center justify-between">
             <Label>AI output</Label>
-            <div className="flex gap-1">
-              <Button size="sm" variant="ghost" disabled={!output} onClick={copy}><Copy className="size-4" /></Button>
-              <Button size="sm" variant="ghost" disabled={!output} onClick={download}><Download className="size-4" /></Button>
-              <Button size="sm" variant="ghost" disabled={!purpose || mutation.isPending} onClick={run}>
-                <RefreshCw className="size-4" />
-              </Button>
-            </div>
+            <OutputActions
+              text={output}
+              onRegenerate={run}
+              regenerating={mutation.isPending}
+              filename="email.txt"
+              favorite={fav}
+              onToggleFavorite={onToggleFav}
+              favoriteDisabled={!historyId}
+            />
           </div>
           {mutation.isPending ? (
-            <SkeletonLines />
+            <div className="py-6"><TypingIndicator label="Drafting your email" /></div>
           ) : output ? (
             <pre className="whitespace-pre-wrap rounded-lg border border-border bg-background p-4 font-sans text-sm leading-relaxed">
-              {output}
+              <TypewriterText text={output} />
             </pre>
           ) : (
-            <EmptyState />
+            <div className="grid h-48 place-items-center text-center text-sm text-muted-foreground">
+              Your generated email will appear here.
+            </div>
           )}
         </div>
       </div>
-    </div>
-  );
-}
-
-function SkeletonLines() {
-  return (
-    <div className="space-y-2">
-      {[90, 70, 100, 80, 60, 95].map((w, i) => (
-        <div key={i} className="h-3 animate-pulse rounded bg-muted" style={{ width: `${w}%` }} />
-      ))}
-    </div>
-  );
-}
-function EmptyState() {
-  return (
-    <div className="grid h-48 place-items-center text-center text-sm text-muted-foreground">
-      Your generated email will appear here.
     </div>
   );
 }

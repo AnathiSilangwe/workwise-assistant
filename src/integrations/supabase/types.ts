@@ -76,6 +76,7 @@ export type Database = {
       history: {
         Row: {
           created_at: string
+          favorite: boolean
           feature: string
           id: string
           prompt: Json
@@ -85,6 +86,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          favorite?: boolean
           feature: string
           id?: string
           prompt: Json
@@ -94,6 +96,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          favorite?: boolean
           feature?: string
           id?: string
           prompt?: Json
