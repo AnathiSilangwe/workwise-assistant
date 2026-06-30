@@ -15,6 +15,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedSummarizerRouteImport } from './routes/_authenticated/summarizer'
+import { Route as AuthenticatedResearchRouteImport } from './routes/_authenticated/research'
 import { Route as AuthenticatedPlannerRouteImport } from './routes/_authenticated/planner'
 import { Route as AuthenticatedEmailRouteImport } from './routes/_authenticated/email'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -48,6 +49,11 @@ const AuthenticatedSummarizerRoute = AuthenticatedSummarizerRouteImport.update({
   path: '/summarizer',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedResearchRoute = AuthenticatedResearchRouteImport.update({
+  id: '/research',
+  path: '/research',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPlannerRoute = AuthenticatedPlannerRouteImport.update({
   id: '/planner',
   path: '/planner',
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/email': typeof AuthenticatedEmailRoute
   '/planner': typeof AuthenticatedPlannerRoute
+  '/research': typeof AuthenticatedResearchRoute
   '/summarizer': typeof AuthenticatedSummarizerRoute
   '/api/chat': typeof ApiChatRoute
 }
@@ -81,6 +88,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/email': typeof AuthenticatedEmailRoute
   '/planner': typeof AuthenticatedPlannerRoute
+  '/research': typeof AuthenticatedResearchRoute
   '/summarizer': typeof AuthenticatedSummarizerRoute
   '/api/chat': typeof ApiChatRoute
 }
@@ -93,6 +101,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/email': typeof AuthenticatedEmailRoute
   '/_authenticated/planner': typeof AuthenticatedPlannerRoute
+  '/_authenticated/research': typeof AuthenticatedResearchRoute
   '/_authenticated/summarizer': typeof AuthenticatedSummarizerRoute
   '/api/chat': typeof ApiChatRoute
 }
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/email'
     | '/planner'
+    | '/research'
     | '/summarizer'
     | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
@@ -115,6 +125,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/email'
     | '/planner'
+    | '/research'
     | '/summarizer'
     | '/api/chat'
   id:
@@ -126,6 +137,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/email'
     | '/_authenticated/planner'
+    | '/_authenticated/research'
     | '/_authenticated/summarizer'
     | '/api/chat'
   fileRoutesById: FileRoutesById
@@ -182,6 +194,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSummarizerRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/research': {
+      id: '/_authenticated/research'
+      path: '/research'
+      fullPath: '/research'
+      preLoaderRoute: typeof AuthenticatedResearchRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/planner': {
       id: '/_authenticated/planner'
       path: '/planner'
@@ -210,6 +229,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEmailRoute: typeof AuthenticatedEmailRoute
   AuthenticatedPlannerRoute: typeof AuthenticatedPlannerRoute
+  AuthenticatedResearchRoute: typeof AuthenticatedResearchRoute
   AuthenticatedSummarizerRoute: typeof AuthenticatedSummarizerRoute
 }
 
@@ -217,6 +237,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEmailRoute: AuthenticatedEmailRoute,
   AuthenticatedPlannerRoute: AuthenticatedPlannerRoute,
+  AuthenticatedResearchRoute: AuthenticatedResearchRoute,
   AuthenticatedSummarizerRoute: AuthenticatedSummarizerRoute,
 }
 
