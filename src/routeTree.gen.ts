@@ -15,6 +15,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedSummarizerRouteImport } from './routes/_authenticated/summarizer'
+import { Route as AuthenticatedPlannerRouteImport } from './routes/_authenticated/planner'
 import { Route as AuthenticatedEmailRouteImport } from './routes/_authenticated/email'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 
@@ -47,6 +48,11 @@ const AuthenticatedSummarizerRoute = AuthenticatedSummarizerRouteImport.update({
   path: '/summarizer',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPlannerRoute = AuthenticatedPlannerRouteImport.update({
+  id: '/planner',
+  path: '/planner',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedEmailRoute = AuthenticatedEmailRouteImport.update({
   id: '/email',
   path: '/email',
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/responsible-ai': typeof ResponsibleAiRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/email': typeof AuthenticatedEmailRoute
+  '/planner': typeof AuthenticatedPlannerRoute
   '/summarizer': typeof AuthenticatedSummarizerRoute
   '/api/chat': typeof ApiChatRoute
 }
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/responsible-ai': typeof ResponsibleAiRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/email': typeof AuthenticatedEmailRoute
+  '/planner': typeof AuthenticatedPlannerRoute
   '/summarizer': typeof AuthenticatedSummarizerRoute
   '/api/chat': typeof ApiChatRoute
 }
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/responsible-ai': typeof ResponsibleAiRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/email': typeof AuthenticatedEmailRoute
+  '/_authenticated/planner': typeof AuthenticatedPlannerRoute
   '/_authenticated/summarizer': typeof AuthenticatedSummarizerRoute
   '/api/chat': typeof ApiChatRoute
 }
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
     | '/responsible-ai'
     | '/dashboard'
     | '/email'
+    | '/planner'
     | '/summarizer'
     | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
@@ -104,6 +114,7 @@ export interface FileRouteTypes {
     | '/responsible-ai'
     | '/dashboard'
     | '/email'
+    | '/planner'
     | '/summarizer'
     | '/api/chat'
   id:
@@ -114,6 +125,7 @@ export interface FileRouteTypes {
     | '/responsible-ai'
     | '/_authenticated/dashboard'
     | '/_authenticated/email'
+    | '/_authenticated/planner'
     | '/_authenticated/summarizer'
     | '/api/chat'
   fileRoutesById: FileRoutesById
@@ -170,6 +182,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSummarizerRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/planner': {
+      id: '/_authenticated/planner'
+      path: '/planner'
+      fullPath: '/planner'
+      preLoaderRoute: typeof AuthenticatedPlannerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/email': {
       id: '/_authenticated/email'
       path: '/email'
@@ -190,12 +209,14 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEmailRoute: typeof AuthenticatedEmailRoute
+  AuthenticatedPlannerRoute: typeof AuthenticatedPlannerRoute
   AuthenticatedSummarizerRoute: typeof AuthenticatedSummarizerRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEmailRoute: AuthenticatedEmailRoute,
+  AuthenticatedPlannerRoute: AuthenticatedPlannerRoute,
   AuthenticatedSummarizerRoute: AuthenticatedSummarizerRoute,
 }
 
