@@ -24,14 +24,20 @@ async function saveHistory(
   title: string,
   prompt: unknown,
   response: unknown,
-) {
-  await supabase.from("history").insert({
-    user_id: userId,
-    feature,
-    title,
-    prompt: prompt as any,
-    response: response as any,
-  });
+): Promise<string | null> {
+  const { data, error } = await supabase
+    .from("history")
+    .insert({
+      user_id: userId,
+      feature,
+      title,
+      prompt: prompt as any,
+      response: response as any,
+    })
+    .select("id")
+    .single();
+  if (error) return null;
+  return data?.id ?? null;
 }
 
 /* ---------------- EMAIL ---------------- */
@@ -53,8 +59,8 @@ export const generateEmail = createServerFn({ method: "POST" })
           "You are an HR communication expert. Write a professional email. Always include a clear 'Subject:' line on the first line, then a blank line, then the body. Sign off appropriately. Return ONLY the email — no commentary.",
         prompt: `Audience: ${data.audience}\nTone: ${data.tone}\nPurpose: ${data.purpose}\nExtra Information: ${data.notes || "(none)"}`,
       });
-      await saveHistory(context.supabase, context.userId, "email", data.purpose.slice(0, 80), data, { text });
-      return { text };
+      const id = await saveHistory(context.supabase, context.userId, "email", data.purpose.slice(0, 80), data, { text });
+      return { text, historyId: id };
     } catch (e) {
       handleAiError(e);
     }
@@ -80,8 +86,8 @@ export const summarizeMeeting = createServerFn({ method: "POST" })
         prompt: `Summarize these meeting notes:\n\n${data.notes}`,
       });
       const json = extractJson(text);
-      await saveHistory(context.supabase, context.userId, "summary", "Meeting summary", data, json);
-      return json;
+      const id = await saveHistory(context.supabase, context.userId, "summary", "Meeting summary", data, json);
+      return { ...json, historyId: id };
     } catch (e) {
       handleAiError(e);
     }
@@ -108,8 +114,8 @@ export const planTasks = createServerFn({ method: "POST" })
         prompt: `Working hours: ${data.workingHours}\nTasks (one per line):\n${data.tasks}`,
       });
       const json = extractJson(text);
-      await saveHistory(context.supabase, context.userId, "planner", "Daily plan", data, json);
-      return json;
+      const id = await saveHistory(context.supabase, context.userId, "planner", "Daily plan", data, json);
+      return { ...json, historyId: id };
     } catch (e) {
       handleAiError(e);
     }
@@ -129,8 +135,8 @@ export const researchTopic = createServerFn({ method: "POST" })
           "You are a research assistant. Explain topics simply, in markdown. Include sections: Summary, Key Concepts, Advantages, Disadvantages, Real-world Examples, Further Reading. Limit answer to ~400 words.",
         prompt: `Explain this topic: ${data.topic}`,
       });
-      await saveHistory(context.supabase, context.userId, "research", data.topic.slice(0, 80), data, { text });
-      return { text };
+      const id = await saveHistory(context.supabase, context.userId, "research", data.topic.slice(0, 80), data, { text });
+      return { text, historyId: id };
     } catch (e) {
       handleAiError(e);
     }
