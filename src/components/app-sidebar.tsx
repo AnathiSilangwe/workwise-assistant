@@ -8,6 +8,7 @@ import {
   Search,
   MessageSquare,
   History,
+  Heart,
   ShieldCheck,
 } from "lucide-react";
 import {
@@ -33,6 +34,7 @@ const main = [
 ] as const;
 
 const secondary = [
+  { title: "Favorites", url: "/favorites", icon: Heart },
   { title: "History", url: "/history", icon: History },
 ] as const;
 
