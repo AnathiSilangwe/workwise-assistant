@@ -156,8 +156,6 @@ The application was developed using **Lovable AI**, an AI-assisted full-stack de
 
 ---
 
----
-
 ## Version Control
 
 - Git
@@ -165,29 +163,7 @@ The application was developed using **Lovable AI**, an AI-assisted full-stack de
 
 ---
 
-
----
-
 # Prompt Engineering
-
-Each AI feature uses structured prompts to improve the quality and consistency of generated responses.
-
-Example:
-
-```
-You are an experienced workplace productivity assistant.
-
-Generate a professional email using the following information:
-
-Audience:
-Tone:
-Purpose:
-Additional Information:
-
-Return only the completed email.
-```
-
-Prompt engineering techniques applied include:
 
 - Role prompting
 - Context injection
@@ -222,33 +198,8 @@ The application is fully responsive and optimized for:
 
 ---
 
-# Performance Optimizations
-
-- TypeScript for improved reliability
-- Component-based architecture
-- Reusable UI components
-- Optimized rendering
-- Responsive layouts
-- Modern Vite build system
-
 ---
 
-# Project Structure
-
-```
-src/
-
-├── assets/
-├── components/
-├── contexts/
-├── hooks/
-├── layouts/
-├── pages/
-├── services/
-├── utils/
-├── App.tsx
-└── main.tsx
-```
 
 ---
 
@@ -266,34 +217,6 @@ src/
 | Lovable AI | AI-assisted application development |
 | Git | Version control |
 | GitHub | Source code management |
-
----
-
-# Installation
-
-Clone the repository
-
-```bash
-git clone https://github.com/yourusername/workwise-ai.git
-```
-
-Navigate to the project directory
-
-```bash
-cd workwise-ai
-```
-
-Install dependencies
-
-```bash
-npm install
-```
-
-Start the development server
-
-```bash
-npm run dev
-```
 
 ---
 
@@ -323,13 +246,10 @@ Bachelor of Information Technology
 Areas of Interest
 
 - Artificial Intelligence
+- AI Engineering
 - Software Development
 - Data Analytics
 - Cybersecurity
-
-GitHub: https://github.com/yourusername
-
-LinkedIn: https://linkedin.com/in/yourprofile
 
 ---
 
